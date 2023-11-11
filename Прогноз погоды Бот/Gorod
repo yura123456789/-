@@ -1,0 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Botpr
+{
+    public class Gorod
+    {
+        public Temperatura main { get; set; }
+        public string Name { get; set; }
+    }
+}
