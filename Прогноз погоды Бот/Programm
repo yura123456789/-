@@ -1,0 +1,69 @@
+using System;
+using Telegram.Bot.Types.Payments;
+using Telegram.Bot.Types.ReplyMarkups;
+using Telegram.Bot.Types.InputFiles;
+using Telegram.Bot.Types.Passport;
+using Telegram.Bot;
+using System.Threading.Tasks;
+using Telegram.Bot.Types;
+using System.Threading;
+using Newtonsoft.Json;
+using System.IO;
+using System.Net;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Args;
+using System.Data.Common;
+using Telegram.Bot.Exceptions;
+
+namespace Botpr
+{
+    internal class Program
+    {
+
+
+        static void Main(string[] args)
+        {
+            var a = new TelegramBotClient("5482641135:AAHWLOEnb6EQ12JXDhyF3_x_YFHkiY1IDAw");
+            a.StartReceiving(Update, Error);
+            Console.ReadLine();
+        }
+
+        private static Task Error(ITelegramBotClient arg1, Exception exception, CancellationToken arg3)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static async Task Update(ITelegramBotClient client, Update update, CancellationToken arg3)
+        {
+            var messege = update.Message;
+            if (messege.Text != null)
+            {
+                if (messege.Text == "/start")
+                {
+                    await client.SendTextMessageAsync(messege.Chat.Id, "Введите город");
+                }
+                else if (messege.Type == MessageType.Text)
+                {
+                    try
+                    {
+                        string url = $"https://api.openweathermap.org/data/2.5/weather?q={messege.Text}&lang=ru&units=metric&appid=ea82c0bce4788001307cef5c170bc9e8 ";
+                        HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
+                        HttpWebResponse httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                        string response;
+                        using (StreamReader streamReader = new StreamReader(httpWebResponse.GetResponseStream()))
+                        {
+                            response = streamReader.ReadToEnd();
+                        }
+                        Gorod wetherresponse = JsonConvert.DeserializeObject<Gorod>(response);
+                        await client.SendTextMessageAsync(messege.Chat.Id, "Температура в " + wetherresponse.Name + " " + wetherresponse.main.Temp.ToString() + " C"+Environment.NewLine+
+                             "Минимальное Значение " + wetherresponse.main.temp_min  + "C"+ Environment.NewLine+"Максимальное значение" + wetherresponse.main.temp_max + "C");
+                    }
+                    catch
+                    {
+                        await client.SendTextMessageAsync(messege.Chat.Id, "Нет такого города");
+                    }
+                }
+            }
+        }
+    }
+}
